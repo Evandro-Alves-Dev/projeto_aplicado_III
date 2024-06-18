@@ -1,0 +1,30 @@
+version: '3.1'
+
+services:
+  projeto_aplicado:
+    container_name: Banco-de-dados
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: root
+
+    networks:
+      - postgres-compose-network
+
+  db-admin:
+    container_name: Gerenciador-de-banco-de-dados
+    image: dpage/pgadmin4
+    ports:
+      - 15432:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: 'root@root.com'
+      PGADMIN_DEFAULT_PASSWORD: 'root'
+    depends_on:
+      - projeto_aplicado
+    networks:
+      - postgres-compose-network
+
+networks:
+  postgres-compose-network:
+    driver: bridge
