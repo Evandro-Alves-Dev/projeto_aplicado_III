@@ -1,3 +1,4 @@
+
 package com.senai.pa3.services;
 
 import com.itextpdf.text.Document;
@@ -148,16 +149,17 @@ public class ProductionService {
         production.setPlanQuantity(productionDTO.getPlanQuantity());
         production.setRealQuantity(productionDTO.getRealQuantity());
         production.setUnit(productionDTO.getUnit());
-        production.setStartTime(buildFormartDate(productionDTO.getStartTime()));
-        production.setFinishTime(buildFormartDate(productionDTO.getFinishTime()));
-        production.setDowntime(buildFormartDate(productionDTO.getDowntime()));
+
+        production.setStartTime(productionDTO.getStartTime());  //production.setStartTime(buildFormartDate(productionDTO.getStartTime()));
+        production.setFinishTime(productionDTO.getFinishTime());  //production.setFinishTime(buildFormartDate(productionDTO.getFinishTime()));
+        production.setDowntime(productionDTO.getDowntime());  ////production.setDowntime(buildFormartDate(productionDTO.getDowntime()));
         production.setPackageType(productionDTO.getPackageType());
         production.setLabelType(productionDTO.getLabelType());
         production.setEquipment(productionDTO.getEquipment());
         // Turno de trabalho definido automaticamente
-        production.setWorkShift(buildWorkShift(productionDTO.getWorkShift()));
+        production.setWorkShift(productionDTO.getWorkShift());  //production.setWorkShift(buildWorkShift(productionDTO.getWorkShift()));
         // Lote de produção definido automaticamente
-        production.setProductionBatch(buildBatch(production.getWorkShift()));
+        production.setProductionBatch(productionDTO.getProductionBatch());  //production.setProductionBatch(buildBatch(production.getWorkShift()));
         production.setBestBefore(productionDTO.getBestBefore());
         production.setNotes(productionDTO.getNotes());
     }
