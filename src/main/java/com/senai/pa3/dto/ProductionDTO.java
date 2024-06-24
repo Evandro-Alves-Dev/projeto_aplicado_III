@@ -4,6 +4,7 @@ package com.senai.pa3.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.senai.pa3.config.ConvertTimestamp;
 import com.senai.pa3.config.CustomLocalDateDeserializer;
 import com.senai.pa3.config.CustomLocalDateSerializer;
 import com.senai.pa3.entities.Production;
@@ -12,6 +13,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 
 @Data
@@ -24,9 +26,9 @@ public class ProductionDTO implements Serializable {
     //private Long productIdProduct;
     //private Long userIdUser;
 
-    private Float planQuantity;
+    private String planQuantity;
 
-    private Float realQuantity;
+    private String realQuantity;
 
     private String unit;
 
@@ -46,9 +48,9 @@ public class ProductionDTO implements Serializable {
 
     private String productionBatch;// lote de produção
 
-    @JsonSerialize(using = CustomLocalDateSerializer.class)
-    @JsonDeserialize(using = CustomLocalDateDeserializer.class)
-    private LocalDate bestBefore;// validade do produto em formato dd-MM-yyyy
+    //@JsonSerialize(using = CustomLocalDateSerializer.class)
+    //@JsonDeserialize(using = CustomLocalDateDeserializer.class)
+    private String bestBefore;// validade do produto em formato dd-MM-yyyy
 
     private String notes;// observações
 

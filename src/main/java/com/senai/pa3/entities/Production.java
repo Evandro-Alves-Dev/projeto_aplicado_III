@@ -1,3 +1,4 @@
+
 package com.senai.pa3.entities;
 
 import jakarta.persistence.Entity;
@@ -10,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 
 @Data
@@ -22,8 +24,8 @@ public class Production implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idProduction;
-    private Float planQuantity;
-    private Float realQuantity;
+    private String planQuantity;
+    private String realQuantity;
     private String unit;
     private String startTime;
     private String finishTime;
@@ -33,7 +35,7 @@ public class Production implements Serializable {
     private String equipment;
     private String workShift;   // turno de produção
     private String productionBatch; // lote de produção
-    private LocalDate bestBefore;  // validade do produto
+    private String bestBefore;  // validade do produto
     private String notes;   // observações
     private Long productId;
 }
