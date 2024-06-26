@@ -34,9 +34,9 @@ public class ProductionController {
 
     @GetMapping
     public ResponseEntity<List<ProductionDTO>> findAll() {
-        LOGGER.info("Iniciado a busca de todos os apontamentos de produção");
+        LOGGER.info("Iniciado a busca de todos os apontamento de produção");
         var response = productionService.findAll();
-        LOGGER.info("Finalizado a busca de todos os apontamentos de produção");
+        LOGGER.info("Finalizado a busca de todos os apontamento de produção");
         return ResponseEntity.ok().body(response);
     }
 
@@ -58,26 +58,26 @@ public class ProductionController {
 
     @PostMapping
     public ResponseEntity<ProductionDTO> insert(@Valid @RequestBody ProductionDTO productionDTO) {
-        LOGGER.info("Iniciado a inserção de um novo apontamentos de produção");
+        LOGGER.info("Iniciado a inserção de um novo apontamento de produção");
         var response = productionService.insert(productionDTO);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{id}").buildAndExpand(response.getIdProduction()).toUri();
-        LOGGER.info("Finalizado a inserção de um novo apontamentos de produção");
+        LOGGER.info("Finalizado a inserção de um novo apontamento de produção");
         return ResponseEntity.created(uri).body(response);
     }
 
     @PutMapping(value = "/{id}")
     public ResponseEntity<ProductionDTO> update(@PathVariable Long id, @Valid @RequestBody ProductionDTO productionDTO) {
-        LOGGER.info("Iniciado a atualização de um apontamentos de produção");
+        LOGGER.info("Iniciado a atualização de um apontamento de produção");
         var response = productionService.update(id, productionDTO);
-        LOGGER.info("Finalizado a atualização de um apontamentos de produção");
+        LOGGER.info("Finalizado a atualização de um apontamento de produção");
         return ResponseEntity.ok().body(response);
     }
 
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        LOGGER.info("Iniciado a exclusão de apontamentos de produção");
+        LOGGER.info("Iniciado a exclusão de apontamento de produção");
         productionService.delete(id);
-        LOGGER.info("Finalizado a exclusão de um apontamentos de produção");
+        LOGGER.info("Finalizado a exclusão de um apontamento de produção");
         return ResponseEntity.noContent().build();
     }
 }

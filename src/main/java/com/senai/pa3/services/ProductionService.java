@@ -22,7 +22,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -149,18 +152,20 @@ public class ProductionService {
         production.setPlanQuantity(productionDTO.getPlanQuantity());
         production.setRealQuantity(productionDTO.getRealQuantity());
         production.setUnit(productionDTO.getUnit());
-
-        production.setStartTime(productionDTO.getStartTime());  //production.setStartTime(buildFormartDate(productionDTO.getStartTime()));
-        production.setFinishTime(productionDTO.getFinishTime());  //production.setFinishTime(buildFormartDate(productionDTO.getFinishTime()));
-        production.setDowntime(productionDTO.getDowntime());  ////production.setDowntime(buildFormartDate(productionDTO.getDowntime()));
+        production.setStartTime(buildFormartDate(productionDTO.getStartTime()));
+        production.setFinishTime(productionDTO.getFinishTime());
+        production.setStartDowntime(productionDTO.getStartDowntime());
+        production.setFinishDowntime(productionDTO.getFinishDowntime());
+        // Tempo de parada definido automaticamente
+        production.setDowntime(buildDowntime(productionDTO.getStartDowntime(), productionDTO.getFinishDowntime()));
         production.setPackageType(productionDTO.getPackageType());
         production.setLabelType(productionDTO.getLabelType());
         production.setEquipment(productionDTO.getEquipment());
         // Turno de trabalho definido automaticamente
-        production.setWorkShift(productionDTO.getWorkShift());  //production.setWorkShift(buildWorkShift(productionDTO.getWorkShift()));
+        production.setWorkShift(buildWorkShift(productionDTO.getWorkShift()));
         // Lote de produção definido automaticamente
-        production.setProductionBatch(productionDTO.getProductionBatch());  //production.setProductionBatch(buildBatch(production.getWorkShift()));
-        production.setBestBefore(productionDTO.getBestBefore());
+        production.setProductionBatch(buildBatch(production.getWorkShift()));
+        production.setBestBefore(validatorBestBefore(productionDTO.getBestBefore()));
         production.setNotes(productionDTO.getNotes());
     }
 
@@ -169,10 +174,11 @@ public class ProductionService {
         production.setRealQuantity(productionDTO.getRealQuantity());
         production.setUnit(productionDTO.getUnit());
         production.setFinishTime(productionDTO.getFinishTime()); //
-        production.setDowntime(productionDTO.getDowntime());
+        production.setStartDowntime(productionDTO.getStartDowntime());
+        production.setFinishDowntime(productionDTO.getFinishDowntime());
         production.setPackageType(productionDTO.getPackageType());
         production.setLabelType(productionDTO.getLabelType());
-        production.setBestBefore(productionDTO.getBestBefore());
+        production.setBestBefore(validatorBestBefore(productionDTO.getBestBefore()));
         production.setNotes(productionDTO.getNotes());
     }
 
@@ -190,23 +196,42 @@ public class ProductionService {
         LocalDateTime dateTime = LocalDateTime.parse(LocalDateTime.now().format(inputFormatter), inputFormatter);
         String output = dateTime.format(outputFormatter);
 
-        var batch = "LT" + "*" + output + "*" + workShift;
+        var batch = "LT" + " - " + output + " - " + workShift;
         return batch;
     }
 
     private String buildFormartDate(String startTime) {
-        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
-
         if (startTime == null || startTime.toString().isBlank()) {
-            LocalDateTime dateTime = LocalDateTime.parse(LocalDateTime.now().format(inputFormatter), inputFormatter);
-            String output = dateTime.format(outputFormatter);
-
-            return output;
+            return LocalDateTime.now().toString();
         } else {
-            LocalDateTime dateTime = LocalDateTime.parse(startTime, inputFormatter);
-            String output = dateTime.format(outputFormatter);
-            return output;
+            return startTime;
         }
+    }
+
+    private String buildDowntime(LocalDateTime startDowntime, LocalDateTime finishDowntime) {
+        if ((startDowntime == null && finishDowntime != null) || (startDowntime != null && finishDowntime == null)) {
+            throw new ResourceNotFoundException("Data de início e fim de parada devem ser preenchidas juntas");
+        }
+
+        if (startDowntime == null && finishDowntime == null) {
+            return null;
+        }
+
+        Duration duration = Duration.between(startDowntime, finishDowntime);
+
+        long hours = duration.toHours();
+        long minutes = duration.toMinutes() % 60;
+        long seconds = duration.getSeconds() % 60;
+
+        LocalTime downtime = LocalTime.of((int) hours, (int) minutes, (int) seconds);
+
+        return downtime.toString();
+    }
+
+    private LocalDate validatorBestBefore(LocalDate bestBefore) {
+        if (bestBefore.isBefore(LocalDate.now())) {
+            throw new ResourceNotFoundException("Data de validade não pode ser menor que a data atual");
+        }
+        return bestBefore;
     }
 }

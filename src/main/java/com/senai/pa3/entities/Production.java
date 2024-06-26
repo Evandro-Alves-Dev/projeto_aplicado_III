@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Data
 @Entity
@@ -24,18 +26,19 @@ public class Production implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idProduction;
-    private String planQuantity;
-    private String realQuantity;
+    private Double planQuantity;
+    private Double realQuantity;
     private String unit;
     private String startTime;
     private String finishTime;
-    private String downtime; // tempo de parada
+    private LocalDateTime startDowntime;
+    private LocalDateTime finishDowntime;
+    private String downtime;
     private String packageType;
     private String labelType;
     private String equipment;
     private String workShift;   // turno de produção
     private String productionBatch; // lote de produção
-    private String bestBefore;  // validade do produto
+    private LocalDate bestBefore;  // validade do produto
     private String notes;   // observações
-    private Long productId;
 }
