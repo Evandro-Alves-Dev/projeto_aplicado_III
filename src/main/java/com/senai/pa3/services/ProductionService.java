@@ -28,6 +28,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -153,11 +154,11 @@ public class ProductionService {
         production.setRealQuantity(productionDTO.getRealQuantity());
         production.setUnit(productionDTO.getUnit());
         production.setStartTime(buildFormartDate(productionDTO.getStartTime()));
-        production.setFinishTime(productionDTO.getFinishTime());
+        production.setFinishTime(buildFormartDateFinish(productionDTO.getFinishTime(), null));
         production.setStartDowntime(productionDTO.getStartDowntime());
         production.setFinishDowntime(productionDTO.getFinishDowntime());
         // Tempo de parada definido automaticamente
-        production.setDowntime(buildDowntime(productionDTO.getStartDowntime(), productionDTO.getFinishDowntime()));
+        production.setDowntime(buildDowntime(productionDTO.getStartDowntime(), productionDTO.getFinishDowntime(), null,"INSERT"));
         production.setPackageType(productionDTO.getPackageType());
         production.setLabelType(productionDTO.getLabelType());
         production.setEquipment(productionDTO.getEquipment());
@@ -165,21 +166,23 @@ public class ProductionService {
         production.setWorkShift(buildWorkShift(productionDTO.getWorkShift()));
         // Lote de produção definido automaticamente
         production.setProductionBatch(buildBatch(production.getWorkShift()));
-        production.setBestBefore(validatorBestBefore(productionDTO.getBestBefore()));
+        production.setBestBefore(validatorBestBefore(productionDTO.getBestBefore(), production.getBestBefore(), "INSERT"));
         production.setNotes(productionDTO.getNotes());
     }
 
-    private void copyDtoToEntityUpdate(ProductionDTO productionDTO, Production production) {
-        production.setPlanQuantity(productionDTO.getPlanQuantity());
-        production.setRealQuantity(productionDTO.getRealQuantity());
-        production.setUnit(productionDTO.getUnit());
-        production.setFinishTime(productionDTO.getFinishTime()); //
-        production.setStartDowntime(productionDTO.getStartDowntime());
-        production.setFinishDowntime(productionDTO.getFinishDowntime());
-        production.setPackageType(productionDTO.getPackageType());
-        production.setLabelType(productionDTO.getLabelType());
-        production.setBestBefore(validatorBestBefore(productionDTO.getBestBefore()));
-        production.setNotes(productionDTO.getNotes());
+    private void copyDtoToEntityUpdate(ProductionDTO productionDTO, Production entity) {
+        entity.setPlanQuantity(productionDTO.getPlanQuantity());
+        entity.setRealQuantity(productionDTO.getRealQuantity());
+        entity.setUnit(productionDTO.getUnit());
+        entity.setFinishTime(buildFormartDateFinish(productionDTO.getFinishTime(), Optional.of(entity)));
+        entity.setStartDowntime(productionDTO.getStartDowntime());
+        entity.setFinishDowntime(productionDTO.getFinishDowntime());
+        // Tempo de parada definido automaticamente
+        entity.setDowntime(buildDowntime(productionDTO.getStartDowntime(), productionDTO.getFinishDowntime(), Optional.of(entity), "UPDATE"));
+        entity.setPackageType(productionDTO.getPackageType());
+        entity.setLabelType(productionDTO.getLabelType());
+        entity.setBestBefore(validatorBestBefore(productionDTO.getBestBefore(), entity.getBestBefore(), "UPDATE"));
+        entity.setNotes(productionDTO.getNotes());
     }
 
     private String buildWorkShift(String workShift) {
@@ -208,13 +211,26 @@ public class ProductionService {
         }
     }
 
-    private String buildDowntime(LocalDateTime startDowntime, LocalDateTime finishDowntime) {
+    private String buildFormartDateFinish(String finishTime, Optional<Production> entity) {
+        if (finishTime == null || finishTime.isBlank()) {
+            return entity.get().getFinishTime();
+        } else {
+            return finishTime;
+        }
+    }
+
+    private String buildDowntime(LocalDateTime startDowntime, LocalDateTime finishDowntime, Optional<Production> entity, String method) {
         if ((startDowntime == null && finishDowntime != null) || (startDowntime != null && finishDowntime == null)) {
             throw new ResourceNotFoundException("Data de início e fim de parada devem ser preenchidas juntas");
         }
 
         if (startDowntime == null && finishDowntime == null) {
-            return null;
+            if (method.equals("INSERT")) {
+                return null;
+            } else if (method.equals("UPDATE")) {
+              return entity.get().getDowntime();
+            }
+
         }
 
         Duration duration = Duration.between(startDowntime, finishDowntime);
@@ -228,8 +244,15 @@ public class ProductionService {
         return downtime.toString();
     }
 
-    private LocalDate validatorBestBefore(LocalDate bestBefore) {
-        if (bestBefore.isBefore(LocalDate.now())) {
+    private LocalDate validatorBestBefore(LocalDate bestBefore, LocalDate entity, String method) {
+        if (bestBefore == null) {
+
+            if (method.equals("INSERT")) {
+                throw new ResourceNotFoundException("Data de validade não pode ser nula");
+            } else {
+                return entity;
+            }
+        } else if (bestBefore.isBefore(LocalDate.now())) {
             throw new ResourceNotFoundException("Data de validade não pode ser menor que a data atual");
         }
         return bestBefore;
